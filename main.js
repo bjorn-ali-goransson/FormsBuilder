@@ -44,7 +44,7 @@ var form = createForm(target, propertyDefinitions, formElements);
 
 document.getElementById('my-form').appendChild(form);
 
-setInterval(function(){
+target._onChange('', function(){
   document.getElementById('debug').value = JSON.stringify(target);
   document.getElementById('heading').innerText = target.name;
-}, 100);
+});

@@ -1,4 +1,4 @@
-function buildProperty(instance, key){
+function buildProperty(target, instance, key){
   return {
     enumerable: true,
     get: function(){
@@ -6,6 +6,22 @@ function buildProperty(instance, key){
     },
     set: function(value){
       instance[key] = value;
+
+      if(target._events[key]){
+        for(var i = 0; i < target._events[key].length; i++){
+          var callback = target._events[key][i];
+
+          callback();
+        }
+      }
+      
+      if(target._events['']){
+        for(var i = 0; i < target._events[''].length; i++){
+          var callback = target._events[''][i];
+
+          callback();
+        }
+      }
     }
   };
 }
@@ -19,10 +35,34 @@ function buildModel(instance){
       continue;
     }
 
-    properties[key] = buildProperty(instance, key);
+    properties[key] = buildProperty(target, instance, key);
   }
+
+  properties['_events'] = {
+    value: {}
+  };
   
   Object.defineProperties(target, properties);
+
+  function onChange(key, callback){
+    if(!target._events[key]){
+      target._events[key] = [];
+    }
+
+    target._events[key].push(callback);
+  }
+
+  target._onChange = function(key, callback){
+    if(key.indexOf(' ') == -1){
+      onChange(key, callback);
+    } else {
+      var keys = key.split(' ');
+
+      for(var i = 0; i < keys.length; i++){
+        onChange(keys[i], callback);
+      }
+    }
+  };
 
   return target;
 }
